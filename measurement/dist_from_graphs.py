@@ -6,9 +6,15 @@ It submits a job through SLRUM for each sample. Note that every sample must have
 FASTA file of query sequences.
 
 Usage:
-python dist_from_graphs.py --graphs *_spades.fastg --queries *_kp.all_consensus_alleles.fasta --filter sample_alleles.tsv \
---suffix_graphs _spades.fastg --suffix_queries _kp.all_consensus_alleles.fasta --suffix_out spd \
---bandage /vlsci/VR0082/shared/ryan/Bandage/Bandage --mem 8192 --debug
+python dist_from_graphs.py --graphs *_spades.fastg --queries *_Ec.all_consensus_alleles.fasta --filter sample_alleles.tsv \
+--suffix_graphs _spades.fastg --suffix_queries _Ec.all_consensus_alleles.fasta --suffix_out spd \
+--bandage apps/Bandage/Bandage --mem 8192 --debug
+
+python dist_from_graphs.py --graphs *_unicyc.fastg --db allele_db.fna --filter sample_alleles.tsv \
+--suffix_graphs _unicyc.fastg --suffix_queries _Ec.all_consensus_alleles.fasta --suffix_out spd \
+--bandage apps/Bandage/Bandage --mem 8192 --debug
+
+The --db option overrides the --queries option.
 
 Format of the filter TSV file:[sample name]\t[allele1,...,alleleN]. Specifically, allele names are comma-delimited. For instance:
     strain1\ta11,a12,a13\n
@@ -17,7 +23,7 @@ Format of the filter TSV file:[sample name]\t[allele1,...,alleleN]. Specifically
     ...
 
 Python version 2 and 3 compatible
-Development history: 18-22/11/2016, 21-22/5/2017, ...; the latest edition: 8/1/2018
+Development history: 18-22/11/2016, 21-22/5/2017, etc.; the latest edition: 7/8/2018
 
 Copyright 2017-2018 Yu Wan <wanyuac@gmail.com>
 Licensed under the Apache License, Version 2.0
@@ -45,11 +51,15 @@ BLAST_MODULE = "BLAST+/2.2.31-GCC-4.9.2"
 def parse_args():
     parser = ArgumentParser(description = "Submit jobs of Bandage to measure physical distances between genes")
     parser.add_argument("--graphs", nargs = "+", type = str, required = True, help = "Assembly graphs in FASTG or GFA formats")
-    parser.add_argument("--queries", nargs = "+", type = str, required = True, \
+    parser.add_argument("--db", type = str, required = False, default = "", help = "A multi-FASTA file of allele sequences")
+    parser.add_argument("--queries", nargs = "+", type = str, required = False, default = "", \
                         help = "FASTA files containing query nucleotide sequences")
     parser.add_argument("--filter", type = str, required = False, default = None, \
                         help = "A tab-delimited file indicating which samples and alleles will be used")
-    parser.add_argument("--ext_id", action = "store_true", required = False, help = "Flag it when your allele IDs contain any extended IDs, such as '.125'")
+    parser.add_argument("--overwrite", action = "store_true", required = False, \
+                        help = "Set it to overwrite existing filtered query files")
+    parser.add_argument("--ext_id", action = "store_true", required = False, \
+                        help = "Set it when your allele IDs contain any extended IDs, such as '.125'")
     parser.add_argument("--ext_id_delim", type = str, required = False, default = ".", \
                         help = "Delimiter leading extended IDs. It must not be an underscore.")
     parser.add_argument("--suffix_graphs", type = str, required = False, default = "_spades.fastg", \
@@ -62,8 +72,10 @@ def parse_args():
     parser.add_argument("--bandage", type = str, required = False, default = "Bandage", help = "Path to Bandage")
     parser.add_argument("--mem", type = str, required = False, default = "8192", help = "Memory (Mb) for every job.")
     parser.add_argument("--walltime", type = str, required = False, default = "1-0:0:00", help = "The walltime of every task")
-    parser.add_argument("--par", type = str, required = False, default = "main", help = "Partition specifing which queue will the jobs belong to")
-    parser.add_argument("--delay", type = int, required = False, default = 5, help = "Number of seconds before submitting the next job. Set to 0 to turn the delay off.")
+    parser.add_argument("--par", type = str, required = False, default = "main", \
+                        help = "Partition specifing which queue will the jobs belong to")
+    parser.add_argument("--delay", type = int, required = False, default = 5, \
+                        help = "Number of seconds before submitting the next job. Set to 0 to turn the delay off.")
     parser.add_argument("--other_args", type = str, required = False, default = "", \
                         help = "Other arguments that will be directly passed to Bandage.")
     parser.add_argument("--debug", action = "store_true", help = "Set it to prohibit submission of jobs.")
@@ -72,6 +84,14 @@ def parse_args():
 
 def main():
     args = parse_args()
+    
+    # check inputs and determine which work stream this program will follow
+    if args.db != "":
+        use_db = True
+    elif args.queries != "":
+        use_db = False
+    else:
+        sys.exit("Either db or queries must be specified.")
 
     # prepare the output directory
     outdir = os.path.realpath(args.outdir)
@@ -79,14 +99,21 @@ def main():
         print("Making the output folder.")
         os.system("mkdir " + outdir)
     
-    # process sequence files
-    files = organise_files(graph_files = args.graphs, query_files = args.queries, sf_g = args.suffix_graphs, sf_q = args.suffix_queries)
-    
-    # Reformat sequence headers and filter query sequences
-    if args.filter != None:  # Import filter information when it is provided and filter query sequences based on the filter
-        filter = setup_filter(args.filter)
-        if len(filter) > 0:  # when a filter is loaded. Otherwise, no changes apply to query sequences.
-            files = filter_queries(files, filter, outdir, args.ext_id, args.ext_id_delim)    
+    # pair assembly graphs with query FASTA files
+    if use_db:
+        files = organise_files(graph_files = args.graphs, \
+                               query_files = make_query_files(targets = setup_filter(args.filter), db_file = args.db, \
+                                                              outdir = os.path.join(outdir, "Filtered_queries"), \
+                                                              overwrite = args.overwrite), \
+                               sf_g = args.suffix_graphs, sf_q = "__querySeqs.fasta")
+    else:
+        files = organise_files(graph_files = args.graphs, query_files = args.queries, sf_g = args.suffix_graphs, sf_q = args.suffix_queries)
+        
+        # Reformat sequence headers and filter query sequences; match filtered FASTA files and assembly graphs.
+        if args.filter != None:  # Import filter information when it is provided and filter query sequences based on the filter
+            flt = setup_filter(args.filter)
+            if len(flt) > 0:  # when a filter is loaded. Otherwise, no changes apply to query sequences.
+                files = filter_queries(files, flt, outdir, args.ext_id, args.ext_id_delim)    
     
     submit_jobs(files = files, bandage = args.bandage, mem = args.mem, walltime = args.walltime, par = args.par, \
                 other_args = args.other_args, outdir = outdir, sf_out = args.suffix_out, run = not args.debug, \
@@ -95,7 +122,43 @@ def main():
     return
 
 
-def setup_filter(tsv):
+def import_db(db_file):
+    # This is a subordinate function of make_query_files.
+    db = {}
+    with open(db_file, "rU") as f:
+        for s in SeqIO.parse(f, "fasta"):
+            db[s.id] = str(s.seq)
+    
+    return db
+
+
+def make_query_files(targets, db_file, outdir, overwrite = False):
+    """
+    Make query files from the allele database according to the target dictionary and returns a list of query files.
+    targets: a dictionary {sample : a list of allele names}    
+    """
+    if not os.path.exists(outdir):
+        print("Making the output folder for query sequences.")
+        os.system("mkdir " + outdir)
+    
+    db = import_db(db_file)  # {allele : sequence}
+    query_files = []
+    for sample, alleles in targets.items():
+        f = os.path.join(outdir, sample + "__querySeqs.fasta")
+        query_files.append(f)
+        if (not os.path.exists(f)) or overwrite:
+            fasta_out = open(f, "w")
+            for a in alleles:
+                fasta_out.write(">" + a + "\n")
+                fasta_out.write(db[a] + "\n")
+            fasta_out.close()
+        else:
+            print(f + " is skipped as it exists and overwrite = False.")
+    
+    return query_files
+
+
+def setup_filter(tsv, reformat = False):
     """
     Read a TSV file that follows the format: [sample]\t[allele1,allele2,...,alleleN].
     Output: filter = {strain1 : [allele1, ..., alleleN], strain2 : [...], ...}
@@ -105,17 +168,20 @@ def setup_filter(tsv):
     changes allele names slightly when it is compiling allele calls into a single table.
     """
     print("Reading filter information.")
-    filter = {}
+    flt = {}
     with open(tsv, "rU") as f:
         for line in f:
             sample, alleles = line.rstrip("\n").split("\t")
             alleles = alleles.split(",")  # Allele IDs may have extended identifiers attached. For instance, AadA1-pm_1597.1287, where "1287" is the extended ID separated by a full stop.
-            if len(alleles) > 1:                    
-                filter[sample] = reformat(alleles)  # transform allele identifiers into the same form in an SRST2-compatible genetic database
+            if len(alleles) > 1:
+                if reformat:  # used when --queries is specified
+                    flt[sample] = reformat(alleles)  # transform allele identifiers into the same form in an SRST2-compatible genetic database
+                else:
+                    flt[sample] = alleles  # used when --db is specified
             else:
                 print("Sample " + sample + " is skipped because it has only a single query sequence.")  # Otherwise, Bandage makes this job fail.
     
-    return(filter)
+    return(flt)
 
 
 def reformat(ids):
@@ -147,36 +213,39 @@ def find_char(string, char):
     return indices
 
 
-def filter_queries(files, filter, outdir, is_ext, ext_delim):
+def filter_queries(files, flt, outdir, is_ext, ext_delim, overwrite = False):
     # configure a folder for filtered query sequences
-    new_fasta_dir = os.path.join(outdir, "filtered_queries")
+    new_fasta_dir = os.path.join(outdir, "Filtered_queries")
     if not os.path.exists(new_fasta_dir):
         os.system("mkdir " + new_fasta_dir)
         
     print("Filtering query sequences based on the filter.")
-    targeted_samples = list(filter.keys())  # We only need to measure the distances in samples that habours query sequences.
+    targeted_samples = list(flt.keys())  # We only need to measure the distances in samples that habours query sequences.
     new_files = {}
     File_set = namedtuple("File_set", ["graph", "query"])  # for filtered and reformatted query sequences of each sample
     for sample, file_set in files.items():
         if sample in targeted_samples:  # Samples on the file list can be less than those in the filter.
             written_count = 0
-            targeted_alleles_mapping = rm_extended_IDs(filter[sample], is_ext, ext_delim)  # remove extended IDs from allele IDs
+            targeted_alleles_mapping = rm_extended_IDs(flt[sample], is_ext, ext_delim)  # remove extended IDs from allele IDs
             targeted_alleles = list(targeted_alleles_mapping.keys())
             new_fasta = os.path.join(new_fasta_dir, sample + "__querySeqs.fasta")
-            f = open(new_fasta, "w")
-            with open(file_set.query, "rU") as query_file:
-                for seq in SeqIO.parse(query_file, "fasta"):
-                    allele_id = extract_allele_id(seq.id)
-                    if allele_id in targeted_alleles:
-                        seq.id = targeted_alleles_mapping[allele_id].replace("__", "_")  # retrieve the original allele ID to make a new sequence name
-                        seq.description = ""
-                        SeqIO.write(seq, f, "fasta")
-                        written_count += 1
-            f.close()
+            if (not os.path.exists(new_fasta)) or overwrite:
+                f = open(new_fasta, "w")
+                with open(file_set.query, "rU") as query_file:
+                    for seq in SeqIO.parse(query_file, "fasta"):
+                        allele_id = extract_allele_id(seq.id)
+                        if allele_id in targeted_alleles:
+                            seq.id = targeted_alleles_mapping[allele_id].replace("__", "_")  # retrieve the original allele ID to make a new sequence name
+                            seq.description = ""
+                            SeqIO.write(seq, f, "fasta")
+                            written_count += 1
+                f.close()
+            else:
+                print(new_fasta + " is skipped as it exists and overwrite = False.")
             new_files[sample] = File_set(graph = file_set.graph, query = new_fasta)
             
             # check if all targeted alleles have been accessed
-            n = len(filter[sample])  # number of unfiltered alleles in the current sample
+            n = len(flt[sample])  # number of unfiltered alleles in the current sample
             if written_count < n:  # which should not happen, but sometimes R replaces dashes with full stops
                 print("Warning: there are %i alleles in the sample %s failed to find their corresponding query sequences." % \
                       (n - written_count, sample))
