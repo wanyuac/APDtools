@@ -215,10 +215,10 @@ for (s in names(ac)) {  # go through strain names
                                labels = c("0", "", "20", "", "40", "", "60", "", "80", "", "100")) +
             scale_color_manual(breaks = as.character(1 : args$n_max), values = group_colours) + theme_bw() +
             theme(legend.position = "none",
-                  plot.title = element_text(size = plot_title_size, face = "bold", colour = "black"),
-                  axis.title = element_text(size = axis_title_size, face = "bold", colour = "black"),
-                  axis.text.x = element_text(size = axis_text_size, angle = 45, colour = "black"),
-                  axis.text.y = element_text(size = axis_text_size, colour = "black"))
+                  plot.title = element_text(size = args$plot_title_size, face = "bold", colour = "black"),
+                  axis.title = element_text(size = args$axis_title_size, face = "bold", colour = "black"),
+                  axis.text.x = element_text(size = args$axis_text_size, angle = 45, colour = "black"),
+                  axis.text.y = element_text(size = args$axis_text_size, colour = "black"))
         panels <- rlist::list.append(panels, p)
     }
 
