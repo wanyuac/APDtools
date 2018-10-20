@@ -5,8 +5,8 @@
 # Column names of the weight table: source and weight. The larger the weight, the more superior the distance is. For example:
 #   source  weight
 #   finished_genome  3
-#   draft_genome    2
-#   contig  1
+#   contig    2
+#   graph  1
 # Author: Yu Wan (wanyuac@gmail.com)
 # Development history: 23/11/2016, 23/5/2017
 # Licence: GPL v2.1

@@ -8,7 +8,7 @@
 #
 # Copyright 2018 Yu Wan <wanyuac@gmail.com>
 # Licensed under the Apache License, Version 2.0
-# First edition: 5 Jan 2018; the latest version: 6 Jan 2018
+# First edition: 5 Jan 2018; the latest version: 20 Oct 2018
 
 # Load dependencies ###############
 library(optparse)
@@ -22,6 +22,9 @@ library(reshape2)
 # Constants ###############
 N_MAX <- 10  # only retain distances measured in paths of no more than five nodes
 STRAIN_NMAX <- 12  # Currently, this script only handles a maximum of 12 samples.
+AXIS_TEXT_SIZE <- 6
+AXIS_TITLE_SIZE <- 8
+PLOT_TITLE_SIZE <- 8
 
 # Obtain arguments ###############
 options = list(
@@ -35,6 +38,14 @@ options = list(
     make_option("--error_tol", dest = "error_tol", type = "character", default = "0,0.5,1,1.5,2,2.5",
                 help = "Comma-delimited vector of error tolerance (kb) [default = %default]",
                 metavar = "CHARACTER"),
+    
+    # plot parameters
+    make_option("--plot_title_size", dest = "plot_title_size", type = "integer", default = PLOT_TITLE_SIZE,
+                help = "Font size for plot titles [default = %default]", metavar = "INTEGER"),
+    make_option("--axis_title_size", dest = "axis_title_size", type = "integer", default = AXIS_TITLE_SIZE,
+                help = "Font size for axis titles [default = %default]", metavar = "INTEGER"),
+    make_option("--axis_text_size", dest = "axis_text_size", type = "integer", default = AXIS_TEXT_SIZE,
+                help = "Font size for axis ticks [default = %default]", metavar = "INTEGER"),
 
     # settings for the output image
     make_option("--img", dest = "img", type = "character", default = "accuracy_vs_nodeNum.png",
@@ -197,16 +208,17 @@ for (s in names(ac)) {  # go through strain names
         p <- ggplot(data = df) +
             geom_line(mapping = aes(x = D_max, y = Accuracy, group = Node_num_max, colour = Node_num_max)) +
             labs(title = paste0(s, ": +/-", round(error_level / 1000, digits = 1), " kb"),
-                 x = "Max. of SPD (kb)", y = "Accuracy (%)") +
+                 x = "Max. of distances (kb)", y = "Accuracy (%)") +
             scale_x_continuous(limits = c(0, max_x), breaks = c(0, d_breaks),
                                labels = as.character(c(0, round(d_breaks / 1000, digits = 1)))) +
             scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 10),
                                labels = c("0", "", "20", "", "40", "", "60", "", "80", "", "100")) +
             scale_color_manual(breaks = as.character(1 : args$n_max), values = group_colours) + theme_bw() +
-            theme(legend.position = "none", plot.title = element_text(size = 8, face = "bold"),
-                  axis.text.x = element_text(size = 6, angle = 45, colour = "black"),
-                  axis.text.y = element_text(size = 6, colour = "black"),
-                  axis.title = element_text(size = 8, face = "bold"))
+            theme(legend.position = "none",
+                  plot.title = element_text(size = plot_title_size, face = "bold", colour = "black"),
+                  axis.title = element_text(size = axis_title_size, face = "bold", colour = "black"),
+                  axis.text.x = element_text(size = axis_text_size, angle = 45, colour = "black"),
+                  axis.text.y = element_text(size = axis_text_size, colour = "black"))
         panels <- rlist::list.append(panels, p)
     }
 
