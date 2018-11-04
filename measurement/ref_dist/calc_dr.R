@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
-# This script calculates reference distances based on feature tables of the same bacterial strain. It assums every genome under
-# analysis is circular and it ignores pseudo genes.
+# This script calculates reference distances based on coordinates in genomic annotations (stored as feature tables of the same
+# bacterial strain). It assums every genome under analysis is circular and it ignores pseudo genes.
 #
 # Usage:
 #   Rscript calc_dr.R --strain [strain name] --features [feature_table.txt] --contig_sizes [a TSV file for genome sizes] --nofuzzy_start
