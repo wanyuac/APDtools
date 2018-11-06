@@ -108,12 +108,12 @@ class Bandage_output:
             lines = record.read().splitlines()  # import all lines from the distance file
         i = -1  # index of elements in the list "lines"
         for line in lines:  # skip the header line in the distance file
-            i += 1
+            i += 1  # So i actually starts from 0, the first element.
             if line.startswith(Bandage_output.__NO_QUERY_PATHS):
-                self.failures.append(line[Bandage_output.__FAILURE_HEADER_LEN : ])  # extract the allele ID from the current line
+                self.failures.append(line[Bandage_output.__FAILURE_HEADER_LEN : ])  # extract the allele ID from the current line, then goes to the next line
             elif line.startswith(Bandage_output.__BANDAGE_ERROR):
                 self.error = line[Bandage_output.__BANDAGE_ERROR_LEN : ]  # get the error message; Only a single error is present becasue Bandage terminates here.
-            elif line.startswith(Bandage_output.__DISTANCE_HEADER) and len(lines) - i > 1:
+            elif line.startswith(Bandage_output.__DISTANCE_HEADER) and len(lines) - i > 1:  # then the rest of lines provide distances
                 self.dists = self.__parse_distance_field(lines[i + 1 : ])  # extract distances from the distance field
                 break
             else:

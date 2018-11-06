@@ -166,6 +166,7 @@ fi
 if [ ! -d "$out_dir" ]; then
 	echo "Making output directories ${out_dir}."
 	mkdir $out_dir
+    mkdir "${out_dir}/Merged_${out_suffix}"
 	for s in ${strains[@]}; do
 		mkdir ${out_dir}/${s}
 		for i in ${iterations[@]}; do  # A double quote retrieves the value of the variable.
@@ -315,7 +316,7 @@ for s in ${strains[@]}; do
                 printf "module load ${python_module}\n\n" >> $script
             fi
 			for i in ${iterations[@]}; do
-				printf "python ${script_dir}/measurement/compile_dists.py -m ${out_dir}/${s}/${i}/${s}__${out_suffix}.tsv -sf '.tsv' -d '__' -od ${out_dir}/${s}/${i}/Parsed -os d__${out_suffix}.tsv -of d_failures__${out_suffix}.tsv -oe dr_errors__${out_suffix}.tsv > ${out_dir}/${s}/${i}/Parsed/parse_d__${out_suffix}.log &\n" >> $script
+				printf "python ${script_dir}/measurement/compile_dists.py -m ${out_dir}/${s}/${i}/${s}__${out_suffix}.tsv -sf '.tsv' -d '__' -od ${out_dir}/${s}/${i}/Parsed -os d__${out_suffix}.tsv -of d_failures__${out_suffix}.tsv -oe d_errors__${out_suffix}.tsv > ${out_dir}/${s}/${i}/Parsed/parse_d__${out_suffix}.log &\n" >> $script
 			done
 			printf "\nwait\n" >> $script
 		fi
@@ -356,7 +357,7 @@ if [ ! -f "$checkpoint" ]; then
                     d_tables="${d_tables},${out_dir}/${s}/${i}/Parsed/d__${out_suffix}.tsv"
                 done
             fi
-            printf "Rscript --vanilla ${script_dir}/analysis/merge_dr_ds.R --dr ${dr_tables} --d ${d_tables} --d_max ${d_max} --n_max ${n_max} --out ${out_dir}/${s}__Dm.tsv &\n" >> $script
+            printf "Rscript --vanilla ${script_dir}/analysis/merge_dr_ds.R --dr ${dr_tables} --d ${d_tables} --d_max ${d_max} --n_max ${n_max} --out ${out_dir}/Merged_${out_suffix}/${s}__Dm.tsv &\n" >> $script
         done
 		printf "\nwait\n" >> $script
 	fi
