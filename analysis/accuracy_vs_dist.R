@@ -14,7 +14,7 @@
 #
 # Copyright 2017 Yu Wan <wanyuac@gmail.com>
 # Licensed under the Apache License, Version 2.0
-# First edition: 20 Dec 2017, the latest edition: 24 Mar 2018
+# First edition: 20 Dec 2017, the latest edition: 6 Nov 2018
 
 # Load dependencies ###############
 library(optparse)
@@ -244,7 +244,10 @@ for (s in names(sw)) {  # s: a strain name
 }
 
 # Draw ggplot objects into the output figure ===============
-png(filename = args$img, width = args$width, height = args$height, units = "mm", res = args$res)
+# Add the argument type = "cairo-png" to avoid the error: "unable to open connection to X11 display" on some systems.
+# See https://stackoverflow.com/questions/24999983/r-unable-to-start-device-png-capabilities-has-true-for-png for details.
+png(filename = args$img, width = args$width, height = args$height, units = "mm",
+    res = args$res, type = "cairo-png")
 par(oma = rep(0.1, times = 4), mar = rep(0.1, times = 4))
 do.call("grid.arrange", c(panels, ncol = 3))
 dev.off()

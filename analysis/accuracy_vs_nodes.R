@@ -8,7 +8,7 @@
 #
 # Copyright 2018 Yu Wan <wanyuac@gmail.com>
 # Licensed under the Apache License, Version 2.0
-# First edition: 5 Jan 2018; the latest version: 20 Oct 2018
+# First edition: 5 Jan 2018; the latest version: 6 Nov 2018
 
 # Load dependencies ###############
 library(optparse)
@@ -38,7 +38,7 @@ options = list(
     make_option("--error_tol", dest = "error_tol", type = "character", default = "0,0.5,1,1.5,2,2.5",
                 help = "Comma-delimited vector of error tolerance (kb) [default = %default]",
                 metavar = "CHARACTER"),
-    
+
     # plot parameters
     make_option("--plot_title_size", dest = "plot_title_size", type = "integer", default = PLOT_TITLE_SIZE,
                 help = "Font size for plot titles [default = %default]", metavar = "INTEGER"),
@@ -225,10 +225,13 @@ for (s in names(ac)) {  # go through strain names
 }
 
 # Finally, draw ggplot objects into the output figure ===============
+# Add the argument type = "cairo-png" to avoid the error: "unable to open connection to X11 display" on some systems.
+# See https://stackoverflow.com/questions/24999983/r-unable-to-start-device-png-capabilities-has-true-for-png for details.
 panel_columns <- length(error_cutoffs)
 png(filename = args$img, units = "mm", res = args$res,
     width = args$width_per_panel * panel_columns,
-    height = args$height_per_panel * strain_num)
+    height = args$height_per_panel * strain_num,
+    type = "cairo-png")
 par(oma = rep(0.1, times = 4), mar = rep(0.1, times = 4))
 do.call("grid.arrange", c(panels, ncol = panel_columns))
 dev.off()
