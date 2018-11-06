@@ -18,6 +18,7 @@ library(gridExtra)
 library(parallel)
 library(rlist)  # to use the function list.append
 library(reshape2)
+library(data.table)  # for large input
 
 # Constants ###############
 N_MAX <- 10  # only retain distances measured in paths of no more than five nodes
@@ -90,8 +91,6 @@ importDistanceBreaks <- function(break_def) {
 }
 
 determineAccuracy <- function(s, strains, n_max, d_breaks, error_tols) {
-    require(data.table)  # for large input
-
     # import the merged distance table of the strain s and compute accuracy of distance measurements
     input_f <- strains[[s]]  # get the path to the input distance table
     print(paste(paste0("Processing the strain", s, "for statistics.", sep = " "), input_f, sep = ":"))

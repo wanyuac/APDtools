@@ -23,6 +23,7 @@ library(grid)
 library(gridExtra)
 library(parallel)
 library(reshape2)
+library(data.table)
 
 # Constants ###############
 D_MAX <- 3e5  # only assess the measurements within 300 kb
@@ -143,7 +144,6 @@ summariseSlidingWindows <- function(s, strains, max_errors, d_max, w, node_num, 
     # It takes as input data of a single strain.
     # Arguments:
     # w: window size; is_le: is less than or equal to the node_num
-    require(data.table)
 
     input_f <- strains[[s]]
     print(paste(paste0("Processing the strain", s, "for statistics.", sep = " "),
