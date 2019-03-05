@@ -1,4 +1,4 @@
-# Draw a line graph to show accuracy of distance measurements (within 300 kb) as
+# Draw a line graph to show accuracy of distance measurements (within 300 kbp) as
 # a function of the measurements
 #
 # For each pair of alleles:
@@ -26,7 +26,7 @@ library(reshape2)
 # Also need data.table (put within the function summariseSlidingWindows so that it can be found in parallel computing).
 
 # Constants ###############
-D_MAX <- 3e5  # only assess the measurements within 300 kb
+D_MAX <- 3e5  # only assess the measurements within 300 kbp
 IMG_NCOL <- 3  # number of columns in the output image
 STRAIN_NMAX <- 12  # Currently, this script only handles a maximum of 12 samples.
 
@@ -37,10 +37,10 @@ options = list(
                 help = "Comma-delimited output file names of merge_dist_tab.R",
                 metavar = "CHARACTER"),
     make_option("--d_max", dest = "d_max", type = "integer", default = 50,
-                help = "Maximal shrtest-path distances (kb) to be analysed [default = %default]",
+                help = "Maximal shrtest-path distances (kbp) to be analysed [default = %default]",
                 metavar = "INTEGER"),
     make_option("--error_tol", dest = "error_tol", type = "character", default = "0,0.5,1,1.5,2,2.5",
-                help = "Comma-delimited vector of error tolerance in the unit of kb [default = %default]",
+                help = "Comma-delimited vector of error tolerance in the unit of kbp [default = %default]",
                 metavar = "CHARACTER"),
     make_option("--window_size", dest = "window_size", type = "integer", default = 1000,
                 help = "Size of sliding window in bp [default = %default]",
@@ -190,7 +190,7 @@ if (strain_num > STRAIN_NMAX) {
 }
 
 img_nrow <- ceiling(strain_num / IMG_NCOL)  # number of rows for panels in the image
-d_max <- min(args$d_max * 1000, D_MAX)  # kb -> bp
+d_max <- min(args$d_max * 1000, D_MAX)  # kbp -> bp
 print(paste("Shortest-path distances within", d_max, "bp will be analysed.", sep = " "))
 
 if (args$node_num < 1) {
@@ -232,7 +232,7 @@ for (s in names(sw)) {  # s: a strain name
     x_breaks <- seq(0, d_max, length.out = 6)  # ticks dividing the X axis into five segments
     panels[[s]] <- ggplot(data = stats) +
         geom_line(mapping = aes(x = midpoint, y = accuracy, group = error_tol, colour = error_tol)) +
-        labs(x = "Distance (kb)", y = "Accuracy (%)", title = s) +
+        labs(x = "Distance (kbp)", y = "Accuracy (%)", title = s) +
         scale_x_continuous(limits = c(0, d_max), breaks = x_breaks,
                            labels = round(x_breaks / 1000, digits = 1)) +
         scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 10),

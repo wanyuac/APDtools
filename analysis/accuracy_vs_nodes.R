@@ -1,4 +1,4 @@
-# Draw a line graph to show accuracy of distance measurements (within 300 kb) as a function of node numbers (1..5).
+# Draw a line graph to show accuracy of distance measurements (within 300 kbp) as a function of node numbers (1..5).
 #
 # Input files are tab-delimited and must follow the same output format defined by the script merge_dist_tab.R.
 # Expect their filenames to follow the format: [strain name]__suffix.tsv or ../../[strain name]__suffix.tsv.
@@ -33,11 +33,11 @@ options = list(
     make_option("--ds", dest = "ds", type = "character", default = NULL,
                 help = "Output file names of merge_dist_tab.R, comma-delimited", metavar = "CHARACTER"),
     make_option("--d_breaks", dest = "d_breaks", type = "character", default = "1,5,10,50,100,200,250,300",
-                help = "Breakpoints (kb) of distance measurements, comma-delimited [default = %default]", metavar = "CHARACTER"),
+                help = "Breakpoints (kbp) of distance measurements, comma-delimited [default = %default]", metavar = "CHARACTER"),
     make_option("--n_max", dest = "n_max", type = "integer", default = N_MAX,
                 help = "Maximal node numbers to be accepted [default = %default]", metavar = "INTEGER"),
     make_option("--error_tol", dest = "error_tol", type = "character", default = "0,0.5,1,1.5,2,2.5",
-                help = "Comma-delimited vector of error tolerance (kb) [default = %default]",
+                help = "Comma-delimited vector of error tolerance (kbp) [default = %default]",
                 metavar = "CHARACTER"),
 
     # plot parameters
@@ -85,7 +85,7 @@ importDistanceBreaks <- function(break_def) {
         d_breaks[where_invalid] <- 0
         d_breaks <- unique(d_breaks)
     }
-    d_breaks <- d_breaks * 1000  # kb -> bp
+    d_breaks <- d_breaks * 1000  # kbp -> bp
 
     return(d_breaks)
 }
@@ -208,8 +208,8 @@ for (s in names(ac)) {  # go through strain names
         df <- df[, c("D_max", "Accuracy", "Node_num_max")]
         p <- ggplot(data = df) +
             geom_line(mapping = aes(x = D_max, y = Accuracy, group = Node_num_max, colour = Node_num_max)) +
-            labs(title = paste0(s, ": +/-", round(error_level / 1000, digits = 1), " kb"),
-                 x = "Max. of distances (kb)", y = "Accuracy (%)") +
+            labs(title = paste0(s, ": +/-", round(error_level / 1000, digits = 1), " kbp"),
+                 x = "Max. of distances (kbp)", y = "Accuracy (%)") +
             scale_x_continuous(limits = c(0, max_x), breaks = c(0, d_breaks),
                                labels = as.character(c(0, round(d_breaks / 1000, digits = 1)))) +
             scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 10),
