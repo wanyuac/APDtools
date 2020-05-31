@@ -7,7 +7,7 @@ APDtools is a stand-alone, optional component of the [GeneMates](https://github.
 - Accuracy analysis of shortest-path distances (SPDs) by comparing SPDs to true APDs obtained from complete genome assemblies; (`accuracy`)
 - Establishment of relationships between APDs and other biological data for interpretation. (`biology`)
 
-Please see `README.md` of each subdirectory for details.
+Please see `README.md` of each subdirectory for details. Since this toolkit is not an essential part of GeneMates, users may want to develop their own methods to produce the GeneMates-compatible distance table for their specific questions or data.
 
 <br/>
 

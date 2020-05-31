@@ -53,7 +53,7 @@ This step merges APDs from different sources in accordance with user's predefine
 Rscript --vanilla ./APDtools/measurement/prioritise_dists.R -d output/compiled/APDs.tsv -w output/compiled/source_weights.tsv -o output/compiled/SPDs_merg.tsv -c 2
 ```
 
-The resulting `SPDs_merg.tsv` can be used as an input (specified by argument `phys.dists`) of the function `findPhysLink` in GeneMates. Since our empirical study also has shown that the reliability of SPDs usually follow the order: complete genomes > contigs > draft assembly graphs, the tab-delimited weight file `source_weights.tsv` has the content:
+The resulting `SPDs_merg.tsv` can be used as an input (specified by argument `phys.dists`) of the function `findPhysLink` in GeneMates, after filtering out unreliable SPDs based on user's predefined thresholds. (See our GeneMates paper and descriptions in the directory [`accuracy`](https://github.com/wanyuac/APDtools/tree/master/accuracy)) Since our empirical study also has shown that the reliability of SPDs usually follow the order: complete genomes > contigs > draft assembly graphs, the tab-delimited weight file `source_weights.tsv` has the content:
 
 ```bash
 source	weight

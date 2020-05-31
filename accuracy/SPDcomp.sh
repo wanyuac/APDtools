@@ -357,7 +357,7 @@ if [ ! -f "$checkpoint" ]; then
                     d_tables="${d_tables},${out_dir}/${s}/${i}/Parsed/d__${out_suffix}.tsv"
                 done
             fi
-            printf "Rscript --vanilla ${script_dir}/analysis/merge_dr_ds.R --dr ${dr_tables} --d ${d_tables} --d_max ${d_max} --n_max ${n_max} --out ${out_dir}/Merged_${out_suffix}/${s}__Dm.tsv &\n" >> $script
+            printf "Rscript --vanilla ${script_dir}/accuracy/merge_dr_ds.R --dr ${dr_tables} --d ${d_tables} --d_max ${d_max} --n_max ${n_max} --out ${out_dir}/Merged_${out_suffix}/${s}__Dm.tsv &\n" >> $script
         done
 		printf "\nwait\n" >> $script
 	fi
