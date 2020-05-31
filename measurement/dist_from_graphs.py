@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This script runs Ryan"s Bandage recursively to pull out physical distances between query sequences for a set of samples.
+This script runs Ryan's Bandage recursively to pull out physical distances between query sequences for a set of samples.
 It submits a job through SLRUM for each sample. Note that every sample must have a single pair of graph/FASTA file and a
 FASTA file of query sequences.
 

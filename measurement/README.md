@@ -1,1 +1,0 @@
-Measurement of physical distances in assembly graphs (including contigs) and finished-grade circular reference genomes (./ref_dist/)
