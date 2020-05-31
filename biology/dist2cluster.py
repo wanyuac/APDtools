@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Measuring the shortest distance between target alleles and a cluster of other alleles in every genome assembly.
+Measuring the shortest physical distance between target alleles and a cluster of other alleles in each genome assembly.
 
 Algorithm:
 1. Read a cluster-definition file to acquire cluster IDs, alleles per cluster and strains harbouring each cluster.

@@ -1,0 +1,3 @@
+# Linking Allelic Physical Distances to other Biological Data
+
+The only script in this directory, `dist2cluster.py`, measures the shortest physical distance between target alleles and a cluster of other alleles in each input genome assembly. It requires `Bandage (distance)` to measure the shortest-path distances between alleles. Use ```python dist2cluster.py --help``` to show options of this script.
