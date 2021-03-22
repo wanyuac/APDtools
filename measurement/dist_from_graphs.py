@@ -23,9 +23,9 @@ Format of the filter TSV file:[sample name]\t[allele1,...,alleleN]. Specifically
     ...
 
 Python version 2 and 3 compatible
-Development history: 18-22/11/2016, 21-22/5/2017, etc.; the latest edition: 7/8/2018
+Development history: 18-22/11/2016, 21-22/5/2017, etc.; the latest edition: 22/3/2021
 
-Copyright 2017-2018 Yu Wan <wanyuac@gmail.com>
+Copyright 2017-2021 Yu Wan <wanyuac@gmail.com>
 Licensed under the Apache License, Version 2.0
 """
 
@@ -102,8 +102,8 @@ def main():
     # pair assembly graphs with query FASTA files
     if use_db:
         files = organise_files(graph_files = args.graphs, \
-                               query_files = make_query_files(targets = setup_filter(args.filter), db_file = args.db, \
-                                                              outdir = os.path.join(outdir, "Filtered_queries"), \
+                               query_files = make_query_files(targets = setup_filter(args.filter, reformat = False),\
+                                                              db_file = args.db, outdir = os.path.join(outdir, "Filtered_queries"), \
                                                               overwrite = args.overwrite), \
                                sf_g = args.suffix_graphs, sf_q = "__querySeqs.fasta")
     else:
@@ -111,7 +111,7 @@ def main():
         
         # Reformat sequence headers and filter query sequences; match filtered FASTA files and assembly graphs.
         if args.filter != None:  # Import filter information when it is provided and filter query sequences based on the filter
-            flt = setup_filter(args.filter)
+            flt = setup_filter(args.filter, reformat = True)
             if len(flt) > 0:  # when a filter is loaded. Otherwise, no changes apply to query sequences.
                 files = filter_queries(files, flt, outdir, args.ext_id, args.ext_id_delim)    
     
@@ -158,7 +158,7 @@ def make_query_files(targets, db_file, outdir, overwrite = False):
     return query_files
 
 
-def setup_filter(tsv, reformat = False):
+def setup_filter(tsv, reformat = False):  # reformat = True when --queries is set.
     """
     Read a TSV file that follows the format: [sample]\t[allele1,allele2,...,alleleN].
     Output: filter = {strain1 : [allele1, ..., alleleN], strain2 : [...], ...}
@@ -233,7 +233,7 @@ def filter_queries(files, flt, outdir, is_ext, ext_delim, overwrite = False):
                 f = open(new_fasta, "w")
                 with open(file_set.query, "rU") as query_file:
                     for seq in SeqIO.parse(query_file, "fasta"):
-                        allele_id = extract_allele_id(seq.id)
+                        allele_id = extract_allele_id(seq.id)  # For example, allele_id = "SulI__1616".
                         if allele_id in targeted_alleles:
                             seq.id = targeted_alleles_mapping[allele_id].replace("__", "_")  # retrieve the original allele ID to make a new sequence name
                             seq.description = ""
@@ -256,12 +256,12 @@ def filter_queries(files, flt, outdir, is_ext, ext_delim, overwrite = False):
 def rm_extended_IDs(ids, is_ext, delim):  # expect ids to be a list
     new_ids = {}  # {new name : original name}
     if is_ext:
-        for id in ids:
-            new_id = id.split(delim)[0]
-            new_ids[new_id] = id
+        for i in ids:
+            new_id = i.split(delim)[0]
+            new_ids[new_id] = i
     else:
-        for id in ids:
-            new_ids[id] = id  # just copy this ID
+        for i in ids:
+            new_ids[i] = i  # just copy this ID
             
     return new_ids
 
