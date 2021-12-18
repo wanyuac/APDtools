@@ -13,7 +13,7 @@ will be stored in the same GFA file for the simplicity of measuring physical dis
 Usage: python fasta2gfa -i *__*.fasta -o references/gfa -d '__'
 
 Author: Yu Wan (wanyuac@gmail.com, https://github.com/wanyuac)
-First edition: 19/11/2016; the latest edition: 18/7/2018
+First edition: 19/11/2016; the latest edition: 18/12/2021
 Python 2 and 3 compatible
 License: GNU GPL 2.1
 """
@@ -68,7 +68,7 @@ def make_gfa(file_sets, outdir):
 
 def convert_fasta(accession, fasta, gfa):
     c = 0  # an additional counter for sequences in each FASTA file
-    with open(fasta, "rU") as handle:
+    with open(fasta, "r") as handle:
         for genome in SeqIO.parse(handle, "fasta"):  # go through every record (assuming to be a complete circular genome) in the current FASTA file
             c += 1
             bp = len(genome.seq)
